@@ -1,0 +1,193 @@
+body {
+    margin: 0px;
+    padding: 0px;
+    position: absolute; 
+    height: 100%;
+    width: 100%;
+    background-size: cover;
+    background-position: center center; /* Center the background */
+    background-repeat: no-repeat;
+    font-style: regular;
+    font-family: "Myriad Pro", Myriad, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background-color: #f0f0f1;
+}
+
+/* Main layout */
+.webgl-content, #loadingBlock, #errorBrowserBlock {
+    padding: 0px;
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    background-color: #f0f0f1;
+    background-size: cover; /* Ensure background image covers the entire space */
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+#gameContainer, canvas {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: #f0f0f1;
+}
+
+#fullScreenButton {
+    display: none; /* Hide the full-screen button */
+}
+
+.subtitle {
+    display: none; /* Hide the subtitle */
+}
+
+.logo {
+    display: none; /* Hide the logo */
+}
+
+#loadingBlock, #errorBrowserBlock {
+    background-image: url("../img/background.png");
+    background-size: cover; /* Scale the background properly */
+    background-position: center center; /* Center the background */
+    background-repeat: no-repeat;
+}
+
+#emptyBar, #fullBar {
+    display: none; /* Hide the progress bars */
+}
+
+.centered {
+    height: 100%;
+    max-width: 770px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Minimum aspect ratio of 9:16 (portrait view) */
+@media (max-aspect-ratio: 9/16) {
+    .webgl-content, #loadingBlock, #errorBrowserBlock {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .keepRatio {
+        width: 100%;
+        padding-top: 177.78%; /* Aspect ratio for 9:16 */
+        position: relative;
+    }
+
+    .logo {
+        width: 30vw;
+    }
+
+    .subtitle, #progressBar, #warningBrowserBlock, #warningMobileBlock, #errorContent {
+        width: 80vw;
+    }
+    
+    #progressBar {
+        height: 6vw;
+        margin-top: 2vw;
+        font-size: 3vw;
+    }
+
+    #emptyBar, #fullBar {
+        height: 2vw;
+    }
+}
+
+/* Aspect ratio between 0.5625 (9:16) and 0.666 (2:3) */
+@media (min-aspect-ratio: 9/16) and (max-aspect-ratio: 2/3) {
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .keepRatio {
+        width: 100%;
+        height: auto;
+    }
+
+    .webgl-content, #gameContainer, canvas, #loadingBlock, #errorBrowserBlock {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .logo {
+        width: 30vw;
+        margin-top: 1vh;
+    }
+
+    .subtitle {
+        font-size: 2vw;
+        padding-bottom: 2vw;
+    }
+
+    .subtitle, #progressBar, #warningBrowserBlock, #warningMobileBlock, #errorContent {
+        width: 80vw;
+    }
+    
+    #progressBar {
+        height: 6vw;
+        margin-top: 2vw;
+        font-size: 3vw;
+    }
+
+    #emptyBar, #fullBar {
+        height: 2vw;
+    }
+
+    .browserIcons a {
+        width: 10vw;
+    }
+}
+
+/* Maximum aspect ratio of 2:3 (landscape) */
+@media (min-aspect-ratio: 2/3) {
+    body {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .keepRatio {
+        width: 66.67vh;
+        height: 100%;
+        margin: auto;
+    }
+
+    .webgl-content, #gameContainer, canvas, #loadingBlock, #errorBrowserBlock {
+        width: 66.67vh; /* Aspect ratio 2:3 */
+        height: 100%;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .logo {
+        width: 25vw;
+        margin-top: 1vh;
+    }
+
+    .subtitle {
+        font-size: 2.3vh;
+        height: 20vh;
+        padding-bottom: 2vh;
+    }
+
+    .subtitle, #progressBar, #warningBrowserBlock, #warningMobileBlock, #errorContent {
+        width: 60vw;
+    }
+
+    #progressBar {
+        height: 8vh;
+        margin-top: 2vw;
+        font-size: 4vh;
+    }
+
+    #emptyBar, #fullBar {
+        height: 2vh;
+    }
+}

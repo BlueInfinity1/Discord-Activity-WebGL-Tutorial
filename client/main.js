@@ -20,9 +20,9 @@ if (isDiscordEnvironment) {
 
 // Function to initialize the Unity instance
 createUnityInstance(document.querySelector("#unity-canvas"), {
-   dataUrl: "Build/Web.data.gz",
-   frameworkUrl: "Build/Web.framework.js.gz",
-   codeUrl: "Build/Web.wasm.gz",
+   dataUrl: "Build/Web.data",
+   frameworkUrl: "Build/Web.framework.js",
+   codeUrl: "Build/Web.wasm",
    streamingAssetsUrl: "StreamingAssets",
    companyName: "DefaultCompany",
    productName: "Unity Webgl Activity",
