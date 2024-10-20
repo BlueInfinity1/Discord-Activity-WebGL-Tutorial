@@ -1,24 +1,24 @@
-let unityInstance;
+import {DiscordSDK} from "@discord/embedded-app-sdk";
+
+const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
+
 let auth;
 
-// Check if we are running inside Discord by looking for the 'frame_id' parameter in the URL
-const urlParams = new URLSearchParams(window.location.search);
-const isDiscordEnvironment = urlParams.has('frame_id'); // 'frame_id' is passed when the app runs in Discord
+if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+   // Mobile device style: fill the whole browser client area with the game canvas:
+   var meta = document.createElement('meta');
+   meta.name = 'viewport';
+   meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+   document.getElementsByTagName('head')[0].appendChild(meta);
 
-if (isDiscordEnvironment) {
-   // If running inside Discord, initialize the Discord SDK
-   import("@discord/embedded-app-sdk").then(({ DiscordSDK }) => {
-      const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
-      setupDiscordSdk(discordSdk);
-   }).catch((err) => {
-      console.error("Failed to load Discord SDK:", err);
-   });
-} else {
-   // If not running in Discord, log that Discord SDK will not be initialized
-   console.log("Running outside Discord environment. Discord SDK initialization skipped.");
+   var canvas = document.querySelector("#unity-canvas");
+   canvas.style.width = "100%";
+   canvas.style.height = "100%";
+   canvas.style.position = "fixed";
+
+   document.body.style.textAlign = "left";
 }
 
-// Function to initialize the Unity instance
 createUnityInstance(document.querySelector("#unity-canvas"), {
    dataUrl: "Build/Web.data.gz",
    frameworkUrl: "Build/Web.framework.js.gz",
@@ -27,34 +27,38 @@ createUnityInstance(document.querySelector("#unity-canvas"), {
    companyName: "DefaultCompany",
    productName: "Unity Webgl Activity",
    productVersion: "1.0",
-   matchWebGLToCanvasSize: false,
-}).then(async (instance) => {
-   unityInstance = instance;
+   matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+   // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+}).then(async unityInstance => {
+   await setupDiscordSdk();
 
-   if (isDiscordEnvironment) {
-      const member = await fetch(`https://discord.com/api/v10/users/@me/guilds/${discordSdk.guildId}/member`, {
-         headers: {
-            Authorization: `Bearer ${auth.access_token}`,
-            'Content-Type': 'application/json',
-         },
-      }).then(response => response.json());
+   const member  = await fetch(`https://discord.com/api/v10/users/@me/guilds/${discordSdk.guildId}/member`, {
+      headers: {
+         // NOTE: we're using the access_token provided by the "authenticate" command
+         Authorization: `Bearer ${auth.access_token}`,
+         'Content-Type': 'application/json',
+      },
+   }).then((response) => response.json());
 
-      let username = member?.nick ?? auth.user.global_name;
-      let iconUrl = member?.avatar 
-         ? `https://cdn.discordapp.com/guilds/${discordSdk.guildId}/users/${auth.user.id}/avatars/${member.avatar}.png?size=${256}`
-         : `https://cdn.discordapp.com/avatars/${auth.user.id}/${auth.user.avatar}.png?size=${256}`;
+   let username = member?.nick ?? auth.user.global_name;
+   let iconUrl = "";
 
-      if (unityInstance) {
-         unityInstance.SendMessage("Bridge", "SetUserData", JSON.stringify({
-            "username": username,
-            "iconUrl": iconUrl,
-         }));
-      }
+   if (member?.avatar != null) {
+      iconUrl = `https://cdn.discordapp.com/guilds/${discordSdk.guildId}/users/${auth.user.id}/avatars/${member.avatar}.png?size=${256}`;
+   } else {
+      iconUrl = `https://cdn.discordapp.com/avatars/${auth.user.id}/${auth.user.avatar}.png?size=${256}`;
    }
+
+   if (unityInstance) {
+      unityInstance.SendMessage("Bridge", "SetUserData", JSON.stringify({
+         "username": username,
+         "iconUrl": iconUrl,
+      }))
+   }
+
 });
 
-// Setup Discord SDK function
-async function setupDiscordSdk(discordSdk) {
+async function setupDiscordSdk(){
    await discordSdk.ready();
 
    // Authorize with Discord Client
@@ -70,7 +74,7 @@ async function setupDiscordSdk(discordSdk) {
       ],
    });
 
-   console.log("Authorization Code:", code);
+   console.log(code)
 
    // Retrieve an access_token from your activity's server
    const response = await fetch("/server/token", {
@@ -78,17 +82,18 @@ async function setupDiscordSdk(discordSdk) {
       headers: {
          "Content-Type": "application/json",
       },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({
+         code,
+      }),
    });
-
    const { access_token } = await response.json();
 
    // Authenticate with Discord client (using the access_token)
-   auth = await discordSdk.commands.authenticate({ access_token });
+   auth = await discordSdk.commands.authenticate({
+      access_token,
+   });
 
    if (auth == null) {
-      throw new Error("Authentication with Discord failed.");
+      throw new Error("Authenticate command failed");
    }
-
-   console.log("Authenticated with Discord");
 }
