@@ -44,9 +44,9 @@ function initializeUnityInstance(authData) {
 
     const loaderUrl = `${buildUrl}/Meow Wars.loader.js`;
     const config = {
-        dataUrl: `${buildUrl}/Meow Wars.data`,
-        frameworkUrl: `${buildUrl}/Meow Wars.framework.js`,
-        codeUrl: `${buildUrl}/Meow Wars.wasm`,
+        dataUrl: `${buildUrl}/Meow Wars.data.br`,
+        frameworkUrl: `${buildUrl}/Meow Wars.framework.js.br`,
+        codeUrl: `${buildUrl}/Meow Wars.wasm.br`,
         streamingAssetsUrl,
         companyName: "SuperSocialLabs",
         productName: "Meow Wars",
@@ -63,7 +63,6 @@ function initializeUnityInstance(authData) {
     script.src = loaderUrl;
     script.onload = () => {
         createUnityInstance(canvas, config, progress => {
-            //console.log("Unity loading progress:", progress * 100 + "%");
             progressBarFull.style.width = 100 * progress + "%";
         }).then(instance => {
             unityInstance = instance;
@@ -151,15 +150,21 @@ async function setupDiscordSdk(discordSdk) {
     // Correctly extract the username based on guild-specific nickname and global name
     const username = member?.nick ?? userInfo.global_name ?? userInfo.username;
 
-    // Extract required data: user ID, username, guild ID, and nickname
-    const userId = userInfo.id;
+    // Generate icon URL if available
+    const iconUrl = userInfo.avatar
+        ? `https://cdn.discordapp.com/avatars/${userInfo.id}/${userInfo.avatar}.png`
+        : "";
 
-    // Print out the details
-    console.log("User ID:", userId);
-    console.log("Global Username:", userInfo.username);
-    console.log("Guild ID:", guildId);
-    console.log("Guild Name:", guildName);
-    console.log("Username in Guild (Nickname):", username);
+    // Create the data structure expected by Unity
+    const discordLoginData = {
+        userId: userInfo.id,
+        userName: username,
+        guildId: guildId,
+        guildName: guildName,
+        iconUrl: iconUrl,
+    };
 
-    return { userId, username, guildId, guildName };
+    // Return the login data for sending in createUnityInstance
+    console.log("MAIN.JS: Discord login data prepared:", discordLoginData);
+    return discordLoginData;
 }
