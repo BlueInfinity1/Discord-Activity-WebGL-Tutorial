@@ -2,16 +2,42 @@ import { DiscordSDK } from '@discord/embedded-app-sdk';
 
 let unityInstance;
 let auth;
+let discordSdk;
 
 // MAIN.JS: Check if we are running inside Discord
 const urlParams = new URLSearchParams(window.location.search);
 const isDiscordEnvironment = urlParams.has('frame_id');
 console.log("MAIN.JS: Discord environment detected:", isDiscordEnvironment);
 
+// MAIN.JS: Function to open an external URL using Discord SDK
+window.OpenExternalUrl = function(url) {
+    console.log("DEBUG: OpenExternalUrl called with URL:", url); // Debug log to see if the function is called
+
+    if (!isDiscordEnvironment) {
+        console.error("DEBUG: Not running in Discord environment. External link cannot be opened.");
+        return;
+    }
+
+    if (!discordSdk) {
+        console.error("DEBUG: Discord SDK not initialized. Cannot open external link.");
+        return;
+    }
+
+    console.log("DEBUG: Opening external URL with Discord SDK:", url);
+    discordSdk.commands.openExternalLink({
+        url: "https://discord.gg/meowwars" //fixed url for now
+    }).catch(err => {
+        console.error("DEBUG: Failed to open external link:", err);
+    });
+};
+
+// Debug log to confirm that the function is defined in the global context
+console.log("DEBUG: OpenExternalUrl is defined in main.js");
+
 // MAIN.JS: Initialize Discord SDK if inside Discord
 if (isDiscordEnvironment) {
     console.log("MAIN.JS: Initializing Discord SDK...");
-    const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+    discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
     setupDiscordSdk(discordSdk)
         .then(authData => {
             console.log("MAIN.JS: Discord SDK setup successful:", authData);
@@ -29,7 +55,7 @@ if (isDiscordEnvironment) {
 // MAIN.JS: Initialize Unity instance
 function initializeUnityInstance(authData) {
     console.log("MAIN.JS: Initializing Unity instance...");
-    
+
     // MAIN.JS: Conditionally set URLs based on the environment
     let buildUrl, streamingAssetsUrl;
     if (isDiscordEnvironment) {
@@ -44,9 +70,9 @@ function initializeUnityInstance(authData) {
 
     const loaderUrl = `${buildUrl}/Meow Wars.loader.js`;
     const config = {
-        dataUrl: `${buildUrl}/Meow Wars.data.br`,
-        frameworkUrl: `${buildUrl}/Meow Wars.framework.js.br`,
-        codeUrl: `${buildUrl}/Meow Wars.wasm.br`,
+        dataUrl: `${buildUrl}/Meow Wars.data`,
+        frameworkUrl: `${buildUrl}/Meow Wars.framework.js`,
+        codeUrl: `${buildUrl}/Meow Wars.wasm`,
         streamingAssetsUrl,
         companyName: "SuperSocialLabs",
         productName: "Meow Wars",
@@ -109,7 +135,7 @@ async function setupDiscordSdk(discordSdk) {
     console.log("MAIN.JS: Received access token:", access_token);
 
     // Fetch the user's global information (for global user ID and name)
-    const userInfo = await fetch('https://discord.com/api/v10/users/@me', {
+    const userInfo = await fetch(`https://discord.com/api/v10/users/@me`, {
         headers: {
             Authorization: `Bearer ${access_token}`,
             "Content-Type": "application/json",
@@ -117,7 +143,7 @@ async function setupDiscordSdk(discordSdk) {
     }).then(response => response.json());
 
     // Fetch the user's guilds to get the guild ID and name
-    const guilds = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+    const guilds = await fetch(`https://discord.com/api/v10/users/@me/guilds`, {
         headers: {
             Authorization: `Bearer ${access_token}`,
             "Content-Type": "application/json",
