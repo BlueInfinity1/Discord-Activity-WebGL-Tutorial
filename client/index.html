@@ -32,6 +32,13 @@
         </div>
     </div>
 
+    <script>
+        // Disable logging in WebGL build
+        console.log = function() {};
+        console.warn = function() {};
+        console.error = function() {};
+    </script>
+
     <!-- Main.js must be imported as a module -->
     <script type="module" src="main.js"></script>
 </body>
